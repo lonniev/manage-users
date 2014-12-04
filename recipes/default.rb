@@ -28,6 +28,7 @@
 
 # grant passwordless sudo rights to the sysadmin members
 node.default['authorization']['sudo']['passwordless'] = true
+node.default['authorization']['sudo']['include_sudoers_d'] = true
 include_recipe "sudo"
 
 # add several likely SSH hosts with git repositories
