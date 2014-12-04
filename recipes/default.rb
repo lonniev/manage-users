@@ -75,7 +75,9 @@ Host *
   IdentityFile #{idFile}
   IdentitiesOnly yes
 EOT
-  end
+
+    action :create_if_missing
+end
 
   file idFile.to_s do
     owner ssh_user['username']
@@ -83,7 +85,9 @@ EOT
     mode 0600
       
     content ssh_keys['private']
-  end
+
+    action :create_if_missing
+end
   
   file idFile.sub_ext( ".pub" ).to_s do
     owner ssh_user['username']
@@ -91,7 +95,9 @@ EOT
     mode 0644
       
     content ssh_keys['public']
-  end
+
+    action :create_if_missing
+end
       
 end
 
@@ -100,9 +106,9 @@ search( "users", "xsession:* AND NOT action:remove") do |xs_user|
 
   xs_user['username'] ||= xs_user['id']
   
-  xSessionFile = Pathname.new( xs_user["home"] ).join( .xsession )
+  xSessionFile = Pathname.new( xs_user["home"] ).join( ".xsession" )
   
-  file xSessionFile do
+  file xSessionFile.to_s do
       owner xs_user["username"]
       group xs_user["username"]
       mode 0644
