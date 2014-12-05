@@ -37,51 +37,32 @@ node.default['authorization']['sudo']['passwordless'] = true
 node.default['authorization']['sudo']['include_sudoers_d'] = true
 include_recipe "sudo"
 
-# add several likely SSH hosts with git repositories
-ssh_known_hosts_entry 'github.com'
-ssh_known_hosts_entry 'bitbucket.org'
-
 # for each user with an has_private_ssh entry, create their ssh identity files
-search( "users", "has_private_ssh:true AND NOT action:remove") do |ssh_user|
+search( "users", "has_private_ssh:true AND NOT action:remove") do |usr|
 
-  ssh_user['username'] ||= ssh_user['id']
+  usr['username'] ||= usr['id']
     
-  search( "private_keys", "id:#{ssh_user['id']}") do |ssh_keys|
+  search( "private_keys", "id:#{usr['id']}") do |ssh_keys|
 
-    ssh_user['home'] = Pathname.new( homeDir ).join( ssh_user['username'] )
+    usr['home'] = Pathname.new( homeDir ).join( usr['username'] )
       
-    sshDir = Pathname.new( ssh_user['home'] ).join( ".ssh" )
+    sshDir = Pathname.new( usr['home'] ).join( ".ssh" )
     idFile = sshDir.join( "id_rsa" )
     
     directory sshDir.to_s do
-      owner ssh_user['username']
-      group ssh_user['username']
+      owner usr['username']
+      group usr['username']
       mode 0700
       recursive true
       
       action :create
     end
   
-    file sshDir.join( "config" ).to_s do
-      owner ssh_user['username']
-      group ssh_user['username']
-      mode 0600
-    
-        content <<-EOT
-Host *
-  StrictHostKeyChecking no
-  IdentityFile #{idFile}
-  IdentitiesOnly yes
-EOT
-  
-      action :create_if_missing
-    end
-
-    keys = Chef::EncryptedDataBagItem.load( "private_keys", ssh_user['id'] )
+    keys = Chef::EncryptedDataBagItem.load( "private_keys", usr['id'] )
         
     file idFile.to_s do
-      owner ssh_user['username']
-      group ssh_user['username']
+      owner usr['username']
+      group usr['username']
       mode 0600
         
       content keys['private']
@@ -90,8 +71,8 @@ EOT
     end
     
     file idFile.sub_ext( ".pub" ).to_s do
-      owner ssh_user['username']
-      group ssh_user['username']
+      owner usr['username']
+      group usr['username']
       mode 0644
         
       content keys['public']
@@ -102,19 +83,19 @@ EOT
 end
 
 # for each user with an xsession entry, create their xsession file
-search( "users", "xsession:* AND NOT action:remove") do |xs_user|
+search( "users", "xsession:* AND NOT action:remove") do |usr|
 
-  xs_user['username'] ||= xs_user['id']
+  usr['username'] ||= usr['id']
 
-  xs_user['home'] = Pathname.new( homeDir ).join( xs_user['username'] )
+  usr['home'] = Pathname.new( homeDir ).join( usr['username'] )
   
-  xSessionFile = Pathname.new( xs_user["home"] ).join( ".xsession" )
+  xSessionFile = Pathname.new( usr["home"] ).join( ".xsession" )
   
   file xSessionFile.to_s do
-      owner xs_user["username"]
-      group xs_user["username"]
+      owner usr["username"]
+      group usr["username"]
       mode 0644
-      content xs_user["xsession"]
+      content usr["xsession"]
       
       action :create_if_missing
   end
