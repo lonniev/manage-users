@@ -17,6 +17,12 @@
 # limitations under the License.
 #
 
+# determine where users' home directories are stored
+getHomeCmd = Mixlib::ShellOut.new("useradd -D|grep HOME|cut -d '=' -f 2")
+getHomeCmd.run_command
+
+homeDir = getHomeCmd.stdout.chomp
+
 # remove and create all users of the devops and sysadmin groups
 # also for tsusers (who are those with Terminal Server rights)
 %w[ devops sysadmin tsusers ].each { |forGroup|
@@ -42,11 +48,6 @@ search( "users", "has_private_ssh:true AND NOT action:remove") do |ssh_user|
     
   search( "private_keys", "id:#{ssh_user['id']}") do |ssh_keys|
 
-    getHomeCmd = Mixlib::ShellOut.new("useradd -D|grep HOME|cut -d '=' -f 2")
-    getHomeCmd.run_command
-
-    homeDir = getHomeCmd.stdout.chomp
-    
     ssh_user['home'] = Pathname.new( homeDir ).join( ssh_user['username'] )
       
     sshDir = Pathname.new( ssh_user['home'] ).join( ".ssh" )
@@ -104,6 +105,8 @@ end
 search( "users", "xsession:* AND NOT action:remove") do |xs_user|
 
   xs_user['username'] ||= xs_user['id']
+
+  xs_user['home'] = Pathname.new( homeDir ).join( xs_user['username'] )
   
   xSessionFile = Pathname.new( xs_user["home"] ).join( ".xsession" )
   
