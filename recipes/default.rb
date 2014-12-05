@@ -42,13 +42,10 @@ search( "users", "has_private_ssh:true AND NOT action:remove") do |usr|
 
   usr['username'] ||= usr['id']
   
-  log "message" do
-    message "about to look for private_key for #{usr['id']}..."
-    level :warn
-  end
-  
-  search( "private_keys", "id:#{usr['id']}") do |ssh_keys|
-
+  begin
+    
+    keys = Chef::EncryptedDataBagItem.load( "private_keys", usr['id'] )
+      
     usr['home'] = Pathname.new( homeDir ).join( usr['username'] )
       
     sshDir = Pathname.new( usr['home'] ).join( ".ssh" )
@@ -63,8 +60,6 @@ search( "users", "has_private_ssh:true AND NOT action:remove") do |usr|
       action :create
     end
   
-    keys = Chef::EncryptedDataBagItem.load( "private_keys", usr['id'] )
-        
     file idFile.to_s do
       owner usr['username']
       group usr['username']
@@ -84,6 +79,8 @@ search( "users", "has_private_ssh:true AND NOT action:remove") do |usr|
   
       action :create_if_missing
     end
+  rescue
+    next
   end      
 end
 
