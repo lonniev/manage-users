@@ -67,21 +67,23 @@ search( "users", "has_private_ssh:true AND NOT action:remove") do |ssh_user|
       mode 0600
     
         content <<-EOT
-  Host *
-    StrictHostKeyChecking no
-    IdentityFile #{idFile}
-    IdentitiesOnly yes
-  EOT
+Host *
+  StrictHostKeyChecking no
+  IdentityFile #{idFile}
+  IdentitiesOnly yes
+EOT
   
       action :create_if_missing
     end
-  
+
+    keys = Chef::EncryptedDataBagItem.load( "private_keys", ssh_user['id'] )
+        
     file idFile.to_s do
       owner ssh_user['username']
       group ssh_user['username']
       mode 0600
         
-      content ssh_keys['private']
+      content keys['private']
   
       action :create_if_missing
     end
@@ -91,7 +93,7 @@ search( "users", "has_private_ssh:true AND NOT action:remove") do |ssh_user|
       group ssh_user['username']
       mode 0644
         
-      content ssh_keys['public']
+      content keys['public']
   
       action :create_if_missing
     end
