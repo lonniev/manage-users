@@ -41,7 +41,14 @@ search( "users", "has_private_ssh:true AND NOT action:remove") do |ssh_user|
   ssh_user['username'] ||= ssh_user['id']
     
   search( "private_keys", "id:#{ssh_user['id']}") do |ssh_keys|
-  
+
+    getHomeCmd = Mixlib::ShellOut.new("useradd -D|grep HOME|cut -d '=' -f 2")
+    getHomeCmd.run_command
+
+    homeDir = getHomeCmd.stdout.chomp
+    
+    ssh_user['home'] = Pathname.new( homeDir ).join( ssh_user['username'] )
+      
     sshDir = Pathname.new( ssh_user['home'] ).join( ".ssh" )
     idFile = sshDir.join( "id_rsa" )
     
