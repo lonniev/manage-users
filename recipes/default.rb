@@ -91,7 +91,22 @@ search( "users", "has_private_ssh:true AND NOT action:remove") do |usr|
       message msg
       level :warn
     end
+  end
+  
+  rescue JSON::ParserError => msg 
     
+    log "message" do
+      message "malformed encrypted data bag 'private_keys' for user #{usr['id']}"
+      level :warn
+    end
+    
+    log "message" do
+      message msg
+      level :warn
+    end
+  end
+  
+  ensure  
     next
   end      
 end
