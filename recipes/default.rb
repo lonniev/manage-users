@@ -41,7 +41,12 @@ include_recipe "sudo"
 search( "users", "has_private_ssh:true AND NOT action:remove") do |usr|
 
   usr['username'] ||= usr['id']
-    
+  
+  log "message" do
+    message "about to look for private_key for #{usr['id']}..."
+    level :warn
+  end
+  
   search( "private_keys", "id:#{usr['id']}") do |ssh_keys|
 
     usr['home'] = Pathname.new( homeDir ).join( usr['username'] )
