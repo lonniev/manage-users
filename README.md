@@ -1,4 +1,4 @@
-manage-user Cookbook
+manage-users Cookbook
 =============
 Manages a set of Unix Users from provided Databags
 
@@ -10,7 +10,7 @@ Attributes
 Usage
 -----
 
-Include cookbook "manage-user" to your Cheffile and include the "manage-users" recipe in your Vagrantfile, roles, or environments.
+Include cookbook "manage-users" to your Cheffile and include the "manage-users" recipe in your Vagrantfile, roles, or environments.
 
 Contributing
 ------------

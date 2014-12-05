@@ -1,11 +1,11 @@
-manage-user CHANGELOG
+manage-users CHANGELOG
 ==============
 
-This file is used to list changes made in each version of the manage-user cookbook.
+This file is used to list changes made in each version of the manage-users cookbook.
 
 0.1.0
 -----
-- [Lonnie VanZandt] - Initial release of manage-user
+- [Lonnie VanZandt] - Initial release of manage-users
 
 - - -
 Check the [Markdown Syntax Guide](http://daringfireball.net/projects/markdown/syntax) for help with Markdown.

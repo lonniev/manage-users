@@ -1,4 +1,4 @@
-name             'manage-user'
+name             'manage-users'
 maintainer       'Lonnie VanZandt'
 maintainer_email 'lonniev@gmail.com'
 license          'Apache 2.0'

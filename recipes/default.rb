@@ -1,5 +1,5 @@
 #
-# Cookbook Name:: manage-user
+# Cookbook Name:: manage-users
 # Recipe:: default
 #
 # Copyright 2014, Lonnie VanZandt

@@ -1,14 +1,14 @@
 require 'chefspec'
 
-describe 'manage-user::default' do
+describe 'manage-users::default' do
   
   let(:chef_run) do
     runner = ChefSpec::ChefRunner.new('platform' => 'ubuntu', 'version'=> '12.04')
-    runner.converge('manage-user::default')
+    runner.converge('manage-users::default')
   end
     
-  it 'should include the manage-user recipe by default' do
-    expect(chef_run).to include_recipe 'manage-user::default'
+  it 'should include the manage-users recipe by default' do
+    expect(chef_run).to include_recipe 'manage-users::default'
   end
 
 end
