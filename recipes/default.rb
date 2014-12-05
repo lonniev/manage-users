@@ -39,66 +39,56 @@ ssh_known_hosts_entry 'bitbucket.org'
 search( "users", "has_private_ssh:true AND NOT action:remove") do |ssh_user|
 
   ssh_user['username'] ||= ssh_user['id']
-
-  ssh_keys = Chef::EncryptedDataBagItem.load( "private_keys", ssh_user['id'] )
-
-  if ( ssh_keys.empty? )
     
-    log "message" do
-        message "user #{ssh_user['id']} missing from data_bags/private_keys."
-        level :warn
+  search( "private_keys", "id:#{ssh_user['id']}") do |ssh_keys|
+  
+    sshDir = Pathname.new( ssh_user['home'] ).join( ".ssh" )
+    idFile = sshDir.join( "id_rsa" )
+    
+    directory sshDir.to_s do
+      owner ssh_user['username']
+      group ssh_user['username']
+      mode 0700
+      recursive true
+      
+      action :create
+    end
+  
+    file sshDir.join( "config" ).to_s do
+      owner ssh_user['username']
+      group ssh_user['username']
+      mode 0600
+    
+        content <<-EOT
+  Host *
+    StrictHostKeyChecking no
+    IdentityFile #{idFile}
+    IdentitiesOnly yes
+  EOT
+  
+      action :create_if_missing
+    end
+  
+    file idFile.to_s do
+      owner ssh_user['username']
+      group ssh_user['username']
+      mode 0600
+        
+      content ssh_keys['private']
+  
+      action :create_if_missing
     end
     
-    next
-  end
+    file idFile.sub_ext( ".pub" ).to_s do
+      owner ssh_user['username']
+      group ssh_user['username']
+      mode 0644
+        
+      content ssh_keys['public']
   
-  sshDir = Pathname.new( ssh_user['home'] ).join( ".ssh" )
-  idFile = sshDir.join( "id_rsa" )
-  
-  directory sshDir.to_s do
-    owner ssh_user['username']
-    group ssh_user['username']
-    mode 0700
-    recursive true
-    
-    action :create
-  end
-
-  file sshDir.join( "config" ).to_s do
-    owner ssh_user['username']
-    group ssh_user['username']
-    mode 0600
-  
-      content <<-EOT
-Host *
-  StrictHostKeyChecking no
-  IdentityFile #{idFile}
-  IdentitiesOnly yes
-EOT
-
-    action :create_if_missing
-end
-
-  file idFile.to_s do
-    owner ssh_user['username']
-    group ssh_user['username']
-    mode 0600
-      
-    content ssh_keys['private']
-
-    action :create_if_missing
-end
-  
-  file idFile.sub_ext( ".pub" ).to_s do
-    owner ssh_user['username']
-    group ssh_user['username']
-    mode 0644
-      
-    content ssh_keys['public']
-
-    action :create_if_missing
-end
-      
+      action :create_if_missing
+    end
+  end      
 end
 
 # for each user with an xsession entry, create their xsession file
