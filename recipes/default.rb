@@ -79,7 +79,19 @@ search( "users", "has_private_ssh:true AND NOT action:remove") do |usr|
   
       action :create_if_missing
     end
-  rescue
+    
+  rescue Chef::Exceptions::InvalidDataBagPath => msg
+    
+    log "message" do
+      message "missing encrypted data bag 'private_keys' for user #{usr['id']}"
+      level :warn
+    end
+    
+    log "message" do
+      message msg
+      level :warn
+    end
+    
     next
   end      
 end
