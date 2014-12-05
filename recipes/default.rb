@@ -80,7 +80,7 @@ search( "users", "has_private_ssh:true AND NOT action:remove") do |usr|
       action :create_if_missing
     end
     
-  rescue Chef::Exceptions::InvalidDataBagPath => msg
+  rescue Chef::Exceptions::InvalidDataBagPath => e
     
     log "message" do
       message "missing encrypted data bag 'private_keys' for user #{usr['id']}"
@@ -88,12 +88,11 @@ search( "users", "has_private_ssh:true AND NOT action:remove") do |usr|
     end
     
     log "message" do
-      message msg
+      message e.message
       level :warn
     end
-  end
   
-  rescue JSON::ParserError => msg 
+  rescue JSON::ParserError => e 
     
     log "message" do
       message "malformed encrypted data bag 'private_keys' for user #{usr['id']}"
@@ -101,10 +100,9 @@ search( "users", "has_private_ssh:true AND NOT action:remove") do |usr|
     end
     
     log "message" do
-      message msg
+      message e.message
       level :warn
     end
-  end
   
   ensure  
     next
