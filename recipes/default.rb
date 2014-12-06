@@ -17,6 +17,9 @@
 # limitations under the License.
 #
 
+# include the users (empty) recipe to gain the users_manage LWRP
+include_recipe "users"
+
 # determine where users' home directories are stored
 getHomeCmd = Mixlib::ShellOut.new("useradd -D|grep HOME|cut -d '=' -f 2")
 getHomeCmd.run_command
