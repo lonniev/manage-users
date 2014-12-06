@@ -26,6 +26,26 @@ getHomeCmd.run_command
 
 homeDir = getHomeCmd.stdout.chomp
 
+# create any missing home directories
+search( "users", "id:* AND NOT action:remove" ) do |usr|
+
+  usr['username'] ||= usr['id']
+
+  usr['home'] = Pathname.new( homeDir ).join( usr['username'] )
+    
+  user usr['username'] do
+    home usr['home'].to_s
+  end
+
+  directory usr['home'].to_s do
+    owner usr['username']
+    group usr['username']
+    mode 0755
+    recursive true
+  end
+    
+end
+
 # remove and create all users of the devops and sysadmin groups
 # also for tsusers (who are those with Terminal Server rights)
 %w[ devops sysadmin tsusers ].each { |forGroup|
