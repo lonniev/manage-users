@@ -32,9 +32,12 @@ search( "users", "id:* AND NOT action:remove" ) do |usr|
   usr['username'] ||= usr['id']
 
   usr['home'] = Pathname.new( homeDir ).join( usr['username'] )
-    
+
   user usr['username'] do
+    comment usr['comment']
     home usr['home'].to_s
+    shell usr['shell']
+    password usr['password']
   end
 
   directory usr['home'].to_s do
@@ -43,7 +46,19 @@ search( "users", "id:* AND NOT action:remove" ) do |usr|
     mode 0755
     recursive true
   end
-    
+
+  usr['groups'].each { |grp|
+
+    group grp
+
+    group grp do
+      action :modify
+      members usr['username']
+      append true
+      
+    end
+  }
+
 end
 
 # remove and create all users of the devops and sysadmin groups
@@ -64,72 +79,72 @@ include_recipe "sudo"
 search( "users", "has_private_ssh:true AND NOT action:remove") do |usr|
 
   usr['username'] ||= usr['id']
-  
+
   begin
-    
+
     keys = Chef::EncryptedDataBagItem.load( "private_keys", usr['id'] )
-      
+
     usr['home'] = Pathname.new( homeDir ).join( usr['username'] )
-      
+
     sshDir = Pathname.new( usr['home'] ).join( ".ssh" )
     idFile = sshDir.join( "id_rsa" )
-    
+
     directory sshDir.to_s do
       owner usr['username']
       group usr['username']
       mode 0700
       recursive true
-      
+
       action :create
     end
-  
+
     file idFile.to_s do
       owner usr['username']
       group usr['username']
       mode 0600
-        
+
       content keys['private']
-  
+
       action :create_if_missing
     end
-    
+
     file idFile.sub_ext( ".pub" ).to_s do
       owner usr['username']
       group usr['username']
       mode 0644
-        
+
       content keys['public']
-  
+
       action :create_if_missing
     end
-    
+
   rescue Chef::Exceptions::InvalidDataBagPath => e
-    
+
     log "message" do
       message "missing encrypted data bag 'private_keys' for user #{usr['id']}"
       level :warn
     end
-    
+
     log "message" do
       message e.message
       level :warn
     end
-  
-  rescue JSON::ParserError => e 
-    
+
+  rescue JSON::ParserError => e
+
     log "message" do
       message "malformed encrypted data bag 'private_keys' for user #{usr['id']}"
       level :warn
     end
-    
+
     log "message" do
       message e.message
       level :warn
     end
-  
-  ensure  
+
+  ensure
     next
-  end      
+  end
 end
 
 # for each user with an xsession entry, create their xsession file
@@ -138,15 +153,15 @@ search( "users", "xsession:* AND NOT action:remove") do |usr|
   usr['username'] ||= usr['id']
 
   usr['home'] = Pathname.new( homeDir ).join( usr['username'] )
-  
+
   xSessionFile = Pathname.new( usr["home"] ).join( ".xsession" )
-  
+
   file xSessionFile.to_s do
       owner usr["username"]
       group usr["username"]
       mode 0644
       content usr["xsession"]
-      
+
       action :create_if_missing
   end
 end
